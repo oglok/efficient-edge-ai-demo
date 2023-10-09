@@ -1,0 +1,20 @@
+apiVersion: v1
+automountServiceAccountToken: false
+kind: ServiceAccount
+metadata:
+  name: efficient-edge-demo-sa
+  namespace: efficient-edge-demo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: efficient-edge-demo-crb
+  namespace: efficient-edge-demo
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: efficient-edge-demo-cr
+subjects:
+- kind: ServiceAccount
+  name: efficient-edge-demo-sa
+  namespace: efficient-edge-demo
