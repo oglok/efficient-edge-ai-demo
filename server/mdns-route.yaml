@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: camserver
+  name: camserver
+  namespace: efficient-edge-demo
+spec:
+  host: microshift-cam-reg.local
+  port:
+    targetPort: 5000
+  to:
+    kind: Service
+    name: camserver
+    weight: 100
+  wildcardPolicy: None

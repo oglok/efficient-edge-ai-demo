@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: camserver
+  namespace: efficient-edge-demo
+  labels:
+    app: camserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: camserver
+  template:
+    metadata:
+      labels:
+        app: camserver
+    spec:
+      containers:
+      - name: camserver 
+        image: quay.io/oglok/cam-server:agx
+        imagePullPolicy: Always
+        ports:
+         - containerPort: 5000
+
