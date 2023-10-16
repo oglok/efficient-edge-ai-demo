@@ -21,6 +21,8 @@ spec:
       - name: camwifi-ap
         image: quay.io/oglok/cam-ap:agx
         imagePullPolicy: Always
+          #command: ["sleep"]
+          #args: ["infinity"]
         securityContext:
           allowPrivilegeEscalation: true
           privileged: true # otherwise hostapd can't change channels for some reason
