@@ -31,7 +31,7 @@ def detect_objects(frame, logger, cam_ip):
     # will match the array index
 
     # plot the results into a numpy image
-    frame = results[0].plot(showconf=False)
+    frame = results[0].plot()
 
     # return the results
     return frame
