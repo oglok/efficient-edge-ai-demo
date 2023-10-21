@@ -1,57 +1,23 @@
-#!/usr/bin/python3
-from flask import Flask
 from flask import request
 from flask import Response
+from flask import Flask
 import logging
-import threading
+import cv2
+from ultralytics import YOLO
+import supervision as sv
 import time
-from yolo import *
-
-from mjpeg_streamer import MjpegReader
 
 # frame to be shared via mjpeg server out
-outputFrames = {}
-lock = threading.Lock()
-
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
+yolo = YOLO("yolov8n.pt")
+byte_tracker = sv.ByteTrack()
+annotator = sv.BoxAnnotator()
 
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
-
-
-@app.route("/register")
-def register():
-    if "token" not in request.args or "ip" not in request.args:
-        return "Invalid registration, you need both token and ip", 400
-
-    cam_ip = request.args["ip"]
-    cam_token = request.args["token"]
-
-    app.logger.info("camera @%s registered with token %s", cam_ip, cam_token)
-    threading.Thread(target=streamer_thread, name=None, args=[cam_ip, cam_token]).start()
-
-    return "ACK", 200
-
-
-def streamer_thread(cam_ip, cam_token):
-
-    app.logger.info("starting streamer thread for cam %s", cam_ip)
-
-    mr = MjpegReader("http://" + cam_ip + "/stream?token=" + cam_token)
-    for content in mr.iter_content():
-        frame = cv2.imdecode(np.frombuffer(content, dtype=np.uint8), cv2.IMREAD_COLOR)
-        process_streamer_frame(cam_ip, frame)
-
-
-def process_streamer_frame(cam_ip, frame):
-    global outputFrames, lock
-    frame_out = detect_objects(frame, app.logger, cam_ip)
-    with lock:
-        outputFrames[cam_ip] = frame_out.copy()
-
 
 @app.route("/video_feed")
 def video_feed():
@@ -60,34 +26,84 @@ def video_feed():
     return Response(generate_video_feed(),
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
+@app.route("/video_feed1")
+def video_feed1():
+    # return the response generated along with the specific media
+    # type (mime type)
+    return Response(generate_video_feed1(),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
 
 def generate_video_feed():
-    # grab global references to the output frame and lock variables
-    global outputFrames, lock
+
+    cam = cv2.VideoCapture(0)
+    totalframes = 0
+    averagefps = 0
+
     # loop over frames from the output stream
-    while True:
-        # wait until the lock is acquired
-        with lock:
-            # check if the output frame is available, otherwise skip
-            # the iteration of the loop
-            if not outputFrames:
-                time.sleep(0.01)
-                continue
+    while cam.isOpened():
 
+        ret, img = cam.read()
+        start_time = time.time()
+        if ret:
             # encode the frame in JPEG format
+            #(flag, encodedImage) = cv2.imencode(".jpg", img)
+            img = cv2.resize(img,(853,480))
+            results = yolo(img, verbose=False)[0]
+            detections = sv.Detections.from_ultralytics(results)
+            detections = byte_tracker.update_with_detections(detections)
+            labels = [
+                f"#{tracker_id} {yolo.model.names[class_id]} {confidence:0.5f}"
+               for _, _, confidence, class_id, tracker_id
+              in detections
+            ]
+            (flag, encodedImage) = cv2.imencode(".jpg", annotator.annotate(scene=img.copy(), detections=detections, labels=labels))
 
-            frames = []
-            for camIP, frame in sorted(outputFrames.items()):
-                frames.append(frame)
+        else:
+            break
+        totalframes += 1
+        averagefps += 1.0 / (time.time() - start_time)
 
-            all_cams = cv2.hconcat(frames)
+        print("FPS:", 1.0 / (time.time() - start_time))
 
-            (flag, encodedImage) = cv2.imencode(".jpg", all_cams)
+        # ensure the frame was successfully encoded
+        if not flag:
+            continue
 
-            # ensure the frame was successfully encoded
-            if not flag:
-                continue
-            # yield the output frame in the byte format
-            yield b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n'
+        # yield the output frame in the byte format
+        yield b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n'
 
-        time.sleep(0.1)
+    cam.release()
+	
+	
+def generate_video_feed1():
+
+    cam = cv2.VideoCapture(0)
+    totalframes = 0
+    averagefps = 0
+
+    # loop over frames from the output stream
+    while cam.isOpened():
+
+        ret, img = cam.read()
+        start_time = time.time()
+        if ret:
+            # encode the frame in JPEG format
+            img = cv2.resize(img,(853,480))
+            results = yolo.track(img, verbose=False)
+            (flag, encodedImage) = cv2.imencode(".jpg", results[0].plot())
+
+        else:
+            break
+        totalframes += 1
+        averagefps += 1.0 / (time.time() - start_time)
+
+        print("FPS:", 1.0 / (time.time() - start_time))
+
+        # ensure the frame was successfully encoded
+        if not flag:
+            continue
+
+        # yield the output frame in the byte format
+        yield b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n'
+
+    cam.release()
