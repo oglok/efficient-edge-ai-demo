@@ -23,13 +23,15 @@ RUN pip install tqdm lapx matplotlib pandas psutil pyyaml scipy seaborn sentry-s
 RUN apt-get install libgstrtspserver-1.0-0 libgstreamer-plugins-bad1.0-dev- -y
 RUN apt install gir1.2-gst-rtsp-server-1.0 vim -y
 
+RUN mkdir -p /app/
+COPY ./storage /app/
+
 COPY ./mlc_chat-0.0.0-cp38-cp38-linux_aarch64.whl /tmp
 COPY ./tvm-0.12.dev1610+gceaf7b015-cp38-cp38-linux_aarch64.whl /tmp
 RUN pip install /tmp/*.whl
 RUN rm -rf /tmp/*.whl
 
 COPY --from=mlc-builder /opt/mlc-llm /opt/
-RUN mkdir -p /app/storage
 COPY --from=mlc-builder /opt/vicuna-7b-v1.5-q4f16_ft/ /app/storage
 
 RUN cd /app/storage && yolo export model=yolov8n.pt format=engine device=0
@@ -39,8 +41,6 @@ COPY ./callback.py /usr/local/lib/python3.8/dist-packages/mlc_chat/callback.py
 COPY ./param_manager.py /usr/local/lib/python3.8/dist-packages/mlc_llm/relax_model/param.manager.py
 RUN update-alternatives --install /usr/local/bin/python python \
 /usr/bin/python3.8 3
-
-RUN mkdir /app/
 
 WORKDIR /app/storage
 
