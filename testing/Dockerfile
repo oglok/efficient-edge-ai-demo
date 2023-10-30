@@ -15,13 +15,9 @@ RUN python3 -m mlc_llm.build \
 
 FROM nvcr.io/nvidia/l4t-pytorch:r35.2.1-pth2.0-py3
 
-RUN apt-get update
-
 RUN pip3 install flask
 RUN pip install --no-deps ultralytics supervision
-RUN pip install tqdm lapx matplotlib pandas psutil pyyaml scipy seaborn sentry-sdk thop numpy==1.23.5 protobuf==3.20.0 futures py-cpuinfo --upgrade
-RUN apt-get install libgstrtspserver-1.0-0 libgstreamer-plugins-bad1.0-dev- -y
-RUN apt install gir1.2-gst-rtsp-server-1.0 vim -y
+RUN pip install tqdm lapx matplotlib pandas psutil pyyaml scipy seaborn sentry-sdk thop numpy==1.23.5 protobuf==3.20.0 futures --upgrade
 
 RUN mkdir -p /app/
 COPY ./storage /app/
