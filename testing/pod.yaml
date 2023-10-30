@@ -8,16 +8,19 @@ spec:
   restartPolicy: OnFailure
   containers:
     - name: builder
-      image: quay.io/alexander_mevec/efficient-edge-demo:0.1
+      image: dustynv/mlc:r35.4.1
+#quay.io/alexander_mevec/efficient-edge-demo:0.1
       imagePullPolicy: IfNotPresent
       securityContext:
         privileged: true
+      command: ["sleep"]
+      args: ["infinity"]
       ports:
         - name: flask-port
           containerPort: 5000
-      startupProbe:
-        httpGet:
-          path: /
-          port: flask-port
-        failureThreshold: 100
-        periodSeconds: 5
+#      startupProbe:
+#        httpGet:
+#          path: /
+#          port: flask-port
+#        failureThreshold: 100
+#        periodSeconds: 5

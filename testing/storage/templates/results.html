@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Demo</title>
+  </head>
+  <body>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type=text/javascript>
+      setInterval(function() {
+        $.get('/test_func', function(data) {
+            document.getElementById("test1").innerHTML = "Inferences Per Second: " + data
+        });
+      },200);
+      setInterval(function() {
+        $.get('/get_inf', function(data) {
+            document.getElementById("test2").innerHTML = "Inference: " + data
+        });
+      },200);
+      function llm() {
+        $.get('/inf')
+      }
+    </script>
+    <div style="width: 100%; display: table;">
+      <div style="display: table-row">
+        <div style="width: 1000px; display: table-cell;">
+	  <h1>Video Stream</h1>
+	  <img style="width:960px;height:720px;" src="{{ url_for('video_feed') }}"></img>
+	</div>
+	<div style="display: table-cell;">
+	  <h1>Inference Data</h1>
+	  <div id="test1">Inferences Per Second: 0</div>
+	  <div id="test2">Inference: NONE</div>
+	  <br>
+	  <form>
+            <button type='button' onclick="llm()">LLM Evaluate</button>
+          </form>
+	</div>
+      </div>
+    </div>
+  </body>
+</html>
