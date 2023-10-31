@@ -1,4 +1,4 @@
-from mlc_chat import ChatModule, ChatConfig, ConvConifg
+from mlc_chat import ChatModule, ChatConfig, ConvConfig
 from mlc_chat.callback import StreamIterator
 from threading import Thread
 import asyncio
@@ -8,7 +8,6 @@ from vicunaserving_pb2 import VicunaReply
 from vicunaserving_pb2 import VicunaRequest
 from vicunaserving_pb2_grpc import MultiVicunaServicer
 from vicunaserving_pb2_grpc import add_MultiVicunaServicer_to_server
-import supervision as sv
 
 class VicunaServing(MultiVicunaServicer):
     async def vicunaInference(self, request: VicunaRequest,
@@ -26,11 +25,9 @@ class VicunaServing(MultiVicunaServicer):
         )
         generation_thread.start()
         
-        infstr = ""
         for delta_message in stream:
             # Yield back our VicunaReply
-            infstr += delta_message
-            yield VicunaReply(reply=infstr)
+            yield VicunaReply(reply=delta_message)
        
         generation_thread.join()
 
