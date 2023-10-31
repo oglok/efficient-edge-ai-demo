@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_package = "ex.grpc";
+option objc_class_prefix = "HSW";
+
+package vicunaserving;
+
+service MultiVicuna {
+  rpc vicunaInference (VicunaRequest) returns (stream VicunaReply) {}
+}
+
+message VicunaRequest {
+  string prompt = 1;
+  string context = 2;
+}
+
+message VicunaReply {
+  string reply = 1;
+}

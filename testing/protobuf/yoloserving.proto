@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_package = "ex.grpc";
+option objc_class_prefix = "HSW";
+
+package yoloserving;
+
+service MultiYolo {
+  rpc yoloInference (YoloRequest) returns (stream YoloReply) {}
+}
+
+message YoloRequest {
+  string model = 1;
+  string vid = 2;
+}
+
+message YoloReply {
+  bytes image = 1;
+}

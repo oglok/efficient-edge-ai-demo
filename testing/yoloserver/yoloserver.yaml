@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: yoloserver
+  name: yoloserver
+  namespace: efficient-edge-demo
+spec:
+  ports:
+  - port: 50051
+    protocol: TCP
+    targetPort: 50051
+  selector:
+    app: yoloserver
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yoloserver
+  namespace: efficient-edge-demo
+  labels:
+    app: yoloserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yoloserver
+  template:
+    metadata:
+      labels:
+        app: yoloserver
+    spec:
+      containers:
+      - name: yoloserver 
+        image: localhost/edge-demo-serving:0.1
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        ports:
+          - name: grpc-port
+            containerPort: 50051
+        command: ["sleep"]
+        args: ["infinity"]
+#        startupProbe:
+#          grpc:
+#            port: grpc-port
+#          failureThreshold: 100
+#          periodSeconds: 5

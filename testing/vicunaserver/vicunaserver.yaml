@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: vicunaserver
+  name: vicunaserver
+  namespace: efficient-edge-demo
+spec:
+  ports:
+  - port: 50051
+    protocol: TCP
+    targetPort: 50051
+  selector:
+    app: vicunaserver
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vicunaserver
+  namespace: efficient-edge-demo
+  labels:
+    app: vicunaserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vicunaserver
+  template:
+    metadata:
+      labels:
+        app: vicunaserver
+    spec:
+      containers:
+      - name: vicunaserver
+        image: localhost/edge-demo-serving:0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: grpc-port
+            containerPort: 50051
+        command: ["sleep"]
+        args: ["infinity"]
+#        startupProbe:
+#          grpc:
+#            port: grpc-port
+#          failureThreshold: 100
+#          periodSeconds: 5
