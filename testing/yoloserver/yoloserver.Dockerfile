@@ -1,47 +1,24 @@
-FROM docker.io/dustynv/mlc:r35.4.1 as mlc-builder
+FROM nvcr.io/nvidia/l4t-pytorch:r35.2.1-pth2.0-py3 AS builder
 
-RUN apt-get update && apt-get install git-lfs
+RUN pip install --no-deps ultralytics
+RUN pip install tqdm lapx matplotlib pandas psutil pyyaml scipy seaborn sentry-sdk thop numpy==1.23.5 protobuf==3.20.0 futures grpcio-tools  --upgrade
 
-RUN git lfs install
+COPY ./protobuf /protobuf
 
-RUN mkdir /opt/models && cd /opt/models && git clone https://huggingface.co/lmsys/vicuna-7b-v1.5
+RUN cd /protobuf/ && python -m grpc_tools.protoc -I./ --python_out=. --pyi_out=. --grpc_python_out=. ./yoloserving.proto
 
-RUN python3 -m mlc_llm.build \
-    --model vicuna-7b-v1.5 \
-    --quantization q4f16_ft \
-    --artifact-path /opt/ \
-    --max-seq-len 4096 \
-    --target cuda \
+RUN cd / && yolo export model=yolov8n.pt format=engine device=0
 
 FROM nvcr.io/nvidia/l4t-pytorch:r35.2.1-pth2.0-py3
 
-RUN pip3 install flask
 RUN pip install --no-deps ultralytics supervision
 RUN pip install tqdm lapx matplotlib pandas psutil pyyaml scipy seaborn sentry-sdk thop numpy==1.23.5 protobuf==3.20.0 futures --upgrade
 
 RUN mkdir -p /app/
-COPY ./storage /app/
+COPY ./ /opt/yoloserver
+COPY --from=builder /protobuf /opt/yoloserver/
+COPY --from=builder /yolov8n.engine /opt/yoloserver/yolov8n.engine
 
-COPY ./mlc_chat-0.0.0-cp38-cp38-linux_aarch64.whl /tmp
-COPY ./tvm-0.12.dev1610+gceaf7b015-cp38-cp38-linux_aarch64.whl /tmp
-RUN pip install /tmp/*.whl
-RUN rm -rf /tmp/*.whl
+WORKDIR /opt/yoloserver
 
-COPY --from=mlc-builder /opt/mlc-llm /opt/
-COPY --from=mlc-builder /opt/vicuna-7b-v1.5-q4f16_ft/ /app/storage
-
-RUN cd /app/storage && yolo export model=yolov8n.pt format=engine device=0
-RUN rm -rf /app/storage/yolov8n.pt
-
-COPY ./callback.py /usr/local/lib/python3.8/dist-packages/mlc_chat/callback.py
-COPY ./param_manager.py /usr/local/lib/python3.8/dist-packages/mlc_llm/relax_model/param.manager.py
-RUN update-alternatives --install /usr/local/bin/python python \
-/usr/bin/python3.8 3
-
-WORKDIR /app/storage
-
-ENV TVM_HOME=/opt/mlc-llm/3rdparty/tvm
-ENV FLASK_APP=server
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
-CMD python3 -m flask run --host 0.0.0.0
+CMD python3 yoloserver.py

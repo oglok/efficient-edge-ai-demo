@@ -18,6 +18,11 @@ app.logger.disabled = True
 fps = 0
 infstr = ""
 
+# Health check
+@app.route("/healthy")
+def healthy():
+    return "Healthy"
+
 # Return the inference string to the spam function
 @app.route("/get_inf")
 def getinf():

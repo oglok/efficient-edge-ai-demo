@@ -51,18 +51,19 @@ spec:
     spec:
       containers:
       - name: webserver 
-        image: localhost/edge-demo-serving:0.1
+        image: localhost/test:test
+#localhost/edge-demo-serving:0.1
         imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
         ports:
           - name: flask-port
             containerPort: 5000
-        command: ["sleep"]
-        args: ["infinity"]
-#        startupProbe:
-#          httpGet:
-#            path: /
-#            port: flask-port
-#          failureThreshold: 100
-#          periodSeconds: 5
+#        command: ["sleep"]
+#        args: ["infinity"]
+        startupProbe:
+          httpGet:
+            path: /healthy
+            port: flask-port
+          failureThreshold: 100
+          periodSeconds: 5
