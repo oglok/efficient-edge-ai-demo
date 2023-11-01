@@ -14,21 +14,30 @@ class VicunaServing(MultiVicunaServicer):
                        context: grpc.aio.ServicerContext) -> VicunaReply:
         logging.info("Serving the requested inferencing")
 
+        # Create a conversation config from the incoming request
         conv_config = ConvConfig(system=request.context)
-
-        cm = ChatModule(model="params", conv_config=conv_config)
-
+        # Create a chat config from our conversation config
+        chat_config = ChatConfig(conv_config=conv_config)
+        # Create our ChatModule using the model/configs available
+        cm = ChatModule(model="params", chat_config=chat_config)
+        # Create a Stream Iterator object to retrieve output
         stream = StreamIterator(callback_interval=2)
+
+        # Create the iterator thread
         generation_thread = Thread(
             target=cm.generate,
             kwargs={"prompt": request.prompt, "progress_callback": stream},
         )
+
+        # Begin iterator thread
         generation_thread.start()
-        
+
+        # For each streamed message out of the iterator
         for delta_message in stream:
             # Yield back our VicunaReply
             yield VicunaReply(reply=delta_message)
-       
+
+       # End iterator thread
         generation_thread.join()
 
 # async serve function for the grpc server

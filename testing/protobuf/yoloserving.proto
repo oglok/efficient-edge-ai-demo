@@ -16,4 +16,5 @@ message YoloRequest {
 
 message YoloReply {
   bytes image = 1;
+  string labels = 2
 }
