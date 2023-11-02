@@ -34,13 +34,11 @@ spec:
     spec:
       containers:
       - name: vicunaserver
-        image: localhost/edge-demo-serving:0.1
+        image: quay.io/alexander_mevec/efficient-edge-demo:vicunaserver
         imagePullPolicy: IfNotPresent
         ports:
           - name: grpc-port
             containerPort: 50051
-        command: ["sleep"]
-        args: ["infinity"]
 #        startupProbe:
 #          grpc:
 #            port: grpc-port

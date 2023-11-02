@@ -34,15 +34,13 @@ spec:
     spec:
       containers:
       - name: yoloserver 
-        image: localhost/edge-demo-serving:0.1
+        image: quay.io/alexander_mevec/edge-serving-demo:yoloserver
         imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
         ports:
           - name: grpc-port
             containerPort: 50051
-        command: ["sleep"]
-        args: ["infinity"]
 #        startupProbe:
 #          grpc:
 #            port: grpc-port

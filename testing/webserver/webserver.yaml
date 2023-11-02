@@ -51,8 +51,7 @@ spec:
     spec:
       containers:
       - name: webserver 
-        image: localhost/test:test
-#localhost/edge-demo-serving:0.1
+        image: quay.io/alexander_mevec/efficient-edge-demo:webserver
         imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true

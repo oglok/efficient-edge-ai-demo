@@ -53,7 +53,7 @@ def inf():
     global infstr
     infstr = ""
     # Open a gRPC connection to our vicuna service
-    with grpc.insecure_channel("vicunaservice.efficient-edge-demo.svc.cluster.local:50051") as channel:
+    with grpc.insecure_channel("vicunaserver.efficient-edge-demo.svc.cluster.local:50051") as channel:
         # Get the gRPC stub to our channel
         stub = vicunaserving_pb2_grpc.MultiVicunaStub(channel)
         # Use the gRPC stub to get our stream
@@ -70,7 +70,7 @@ def generate_video_feed():
         # Instantiate our time
         start_time = time.time()
         # Open a gRPC connection to our yolo service
-        with grpc.insecure_channel("yoloservice.efficient-edge-demo.svc.cluster.local:50051") as channel:
+        with grpc.insecure_channel("yoloserver.efficient-edge-demo.svc.cluster.local:50051") as channel:
             # Get the gRPC stub to our channel
             stub = yoloserving_pb2_grpc.MultiYoloStub(channel)
             # Use the gRPC stub to get our stream

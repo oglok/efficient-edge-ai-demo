@@ -1,0 +1,163 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/audit-version: v1.24
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/enforce-version: v1.24
+    pod-security.kubernetes.io/warn: privileged
+    pod-security.kubernetes.io/warn-version: v1.24
+  name: efficient-edge-demo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: vicunaserver
+  name: vicunaserver
+  namespace: efficient-edge-demo
+spec:
+  ports:
+  - port: 50051
+    protocol: TCP
+    targetPort: 50051
+  selector:
+    app: vicunaserver
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vicunaserver
+  namespace: efficient-edge-demo
+  labels:
+    app: vicunaserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vicunaserver
+  template:
+    metadata:
+      labels:
+        app: vicunaserver
+    spec:
+      containers:
+      - name: vicunaserver
+        image: quay.io/alexander_mevec/efficient-edge-demo:vicunaserver
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: grpc-port
+            containerPort: 50051
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: webserver
+  name: webserver
+  namespace: efficient-edge-demo
+spec:
+  ports:
+  - port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: webserver
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: webserver
+  name: webserver
+  namespace: efficient-edge-demo
+spec:
+  host: microshift-web-demo.local
+  port:
+    targetPort: 5000
+  to:
+    kind: Service
+    name: webserver
+    weight: 100
+  wildcardPolicy: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webserver
+  namespace: efficient-edge-demo
+  labels:
+    app: webserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webserver
+  template:
+    metadata:
+      labels:
+        app: webserver
+    spec:
+      containers:
+      - name: webserver
+        image: quay.io/alexander_mevec/efficient-edge-demo:webserver
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        ports:
+          - name: flask-port
+            containerPort: 5000
+        startupProbe:
+          httpGet:
+            path: /healthy
+            port: flask-port
+          failureThreshold: 100
+          periodSeconds: 5
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: yoloserver
+  name: yoloserver
+  namespace: efficient-edge-demo
+spec:
+  ports:
+  - port: 50051
+    protocol: TCP
+    targetPort: 50051
+  selector:
+    app: yoloserver
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yoloserver
+  namespace: efficient-edge-demo
+  labels:
+    app: yoloserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yoloserver
+  template:
+    metadata:
+      labels:
+        app: yoloserver
+    spec:
+      containers:
+      - name: yoloserver
+        image: quay.io/alexander_mevec/efficient-edge-demo:yoloserver
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        ports:
+          - name: grpc-port
+            containerPort: 50051
