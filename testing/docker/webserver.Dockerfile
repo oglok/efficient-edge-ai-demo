@@ -21,7 +21,7 @@ RUN apt update && apt install wget -y
 RUN wget http://launchpadlibrarian.net/691210909/libssl1.1_1.1.1f-1ubuntu2.20_arm64.deb && apt install ./libssl1.1_1.1.1f-1ubuntu2.20_arm64.deb -y && apt clean && rm -rf libssl1.1_1.1.1f-1ubuntu2.20_arm64.deb 
 
 # Remove unneeded packages and clean the apt cache
-RUN apt remove wget -y && apt autoremove -y && apt clean
+RUN apt remove wget python-setuptools python3-pip -y && apt autoremove -y && apt clean
 RUN pip uninstall setuptools -y
 
 # Copy webserver app, compiled protobuf protocols, and redis executables

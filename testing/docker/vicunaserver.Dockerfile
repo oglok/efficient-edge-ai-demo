@@ -46,9 +46,11 @@ RUN python3.8 -m pip install --no-cache /tmp/*.whl grpcio aiohttp numpy==1.23.5 
 RUN apt install wget -y
 RUN wget -O /usr/local/lib/python3.8/dist-packages/mlc_chat/callback.py https://raw.githubusercontent.com/mlc-ai/mlc-llm/830656fa9779ecfb121b7eef218d04e1ad7e50bf/python/mlc_chat/callback.py
 
+RUN apt upgrade -y
+
 # Remove dependencies used only for local builds/installs
 RUN pip uninstall scipy sympy networkx pydantic aiohttp setuptools tornado pydantic_core -y
-RUN apt remove wget gcc python3-dev  autoconf bc build-essential g++-8 gcc-8 clang-8 lld-8 gettext-base gfortran-8 iputils-ping libbz2-dev libc++-dev libcgal-dev libffi-dev libfreetype6-dev libhdf5-dev libjpeg-dev liblzma-dev libncurses5-dev libncursesw5-dev libpng-dev libreadline-dev libssl-dev libsqlite3-dev libxml2-dev libxslt-dev locales moreutils openssl python-openssl rsync scons python3-pip libopenblas-dev -y && apt autoremove -y && apt clean
+RUN apt remove wget python-setuptools gcc python3-dev  autoconf bc build-essential g++-8 gcc-8 clang-8 lld-8 gettext-base gfortran-8 iputils-ping libbz2-dev libc++-dev libcgal-dev libffi-dev libfreetype6-dev libhdf5-dev libjpeg-dev liblzma-dev libncurses5-dev libncursesw5-dev libpng-dev libreadline-dev libssl-dev libsqlite3-dev libxml2-dev libxslt-dev locales moreutils openssl python-openssl rsync scons python3-pip libopenblas-dev -y && apt autoremove -y && apt clean
 
 # Install essential CUDA packages
 RUN apt install -y --no-install-recommends --no-install-suggests cuda-minimal-build-11-4 cuda-nvrtc-11-4 libcudnn8 libcublas-11-4 libcurand-11-4

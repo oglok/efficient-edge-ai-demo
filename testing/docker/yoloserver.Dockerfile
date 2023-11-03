@@ -38,6 +38,8 @@ RUN rm -rf /vision
 RUN mkdir /opt/yoloserver/
 RUN wget -O /opt/yoloserver/image.jpg https://media.npr.org/assets/img/2013/06/04/ducky062way-4bd453a4ade1d0f971e97598b78a44b5cc7b760a-s1100-c50.jpg
 
+# Upgrade all OS files
+RUN apt upgrade -y
 
 # Remove dependencies used only for local builds/installs
 RUN python3 -m pip uninstall -y ninja setuptools
