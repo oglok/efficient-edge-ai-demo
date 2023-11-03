@@ -44,7 +44,6 @@ class YoloServing(MultiYoloServicer):
                 in detections
             ]
 
-            counted_labels = "In this room, I see: "
             counted_labels += str(Counter(labels))
 
             # Annotate our frame with our detections and labels

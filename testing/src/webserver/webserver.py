@@ -22,6 +22,11 @@ context = ""
 # Connect to redis server
 red = redis.StrictRedis('localhost', 6379, 0, charset='utf-8', decode_responses=True)
 
+# Health check
+@app.route("/healthy")
+def healthy():
+    return "Healthy"
+
 # Return the llm event stream
 @app.route("/llm_stream")
 def llm_stream():
@@ -58,7 +63,7 @@ def inf():
 
 def generate_text_feed(prompt_data, prompt_context):
     # Open a gRPC connection to our vicuna service
-    with grpc.insecure_channel("yoloserver.efficient-edge-demo.svc.cluster.local:50051") as channel:
+    with grpc.insecure_channel("vicunaserver.efficient-edge-demo.svc.cluster.local:50051") as channel:
         # Get the gRPC stub to our channel
         stub = vicunaserving_pb2_grpc.MultiVicunaStub(channel)
         red.publish('llm', "Assistant: ")
@@ -95,12 +100,13 @@ def generate_video_feed():
             # Use the gRPC stub to get our stream
             for response in stub.yoloInference(
                 yoloserving_pb2.YoloRequest(model="yolov8n.engine",vid="0")):
-                    # Yield the encoded bytebuffer of the frame to our renderer
-                    yield b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + response.image + b'\r\n'
-                    # Publish FPS stat
-                    red.publish('fps', str(round(1.0 / (time.time() - start_time),2)))
                     # In this room, I see: Counter({'bottle': 3, 'cup': 1})
                     context = response.labels.replace("Counter({", "")
                     context = context.replace("})","")
                     context = context.replace(":","")
+                    context = "In this room attending this presentation are: " + context + ". "
+                    # Publish FPS stat
+                    red.publish('fps', str(round(1.0 / (time.time() - start_time),2)))
+                    # Yield the encoded bytebuffer of the frame to our renderer
+                    yield b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + response.image + b'\r\n'
                     start_time = time.time()
