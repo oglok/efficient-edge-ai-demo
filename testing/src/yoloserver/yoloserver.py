@@ -44,7 +44,7 @@ class YoloServing(MultiYoloServicer):
                 in detections
             ]
 
-            counted_labels += str(Counter(labels))
+            counted_labels = str(Counter(labels))
 
             # Annotate our frame with our detections and labels
             frame = box_annotator.annotate(
