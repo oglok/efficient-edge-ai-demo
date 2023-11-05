@@ -9,6 +9,7 @@ from yoloserving_pb2_grpc import MultiYoloServicer
 from yoloserving_pb2_grpc import add_MultiYoloServicer_to_server
 import supervision as sv
 from collections import Counter
+import numpy as np
 
 class YoloServing(MultiYoloServicer):
     async def yoloInference(self, request: YoloRequest,
@@ -33,6 +34,22 @@ class YoloServing(MultiYoloServicer):
 
             # Store our frame for bounding boxes later
             frame = result.orig_img
+
+            # Load watermark image
+            watermark = cv2.imread("watermark.png")
+
+            # Calculate the dimensions for the watermark (e.g., 10% of the frame width)
+            frame_height, frame_width, _ = frame.shape
+            watermark_height = int(frame_height * 0.2)  # Adjust the size as needed
+            watermark_width = int(watermark_height * watermark.shape[1] / watermark.shape[0])
+
+            # Calculate the position for the watermark (right bottom corner)
+            x_offset = frame_width - watermark_width
+            y_offset = frame_height - watermark_height
+
+            # Resize the watermark to the calculated dimensions
+            watermark = cv2.resize(watermark, (watermark_width, watermark_height))
+            frame[y_offset:y_offset+watermark_height, x_offset:x_offset+watermark_width] = watermark
 
             # Extract detections from the model result
             detections = sv.Detections.from_ultralytics(result)
@@ -63,7 +80,7 @@ class YoloServing(MultiYoloServicer):
             yield YoloReply(labels=counted_labels,image=imgstring)
 
 def precache_model():
-    # Pre-run inference to "warm up" the engine file into memory using the 
+    # Pre-run inference to "warm up" the engine file into memory using the
     model = YOLO("yolov8n.engine")
     model.track(source="image.jpg", device=0, show=False, stream=False, agnostic_nms=True, verbose=False)
 
