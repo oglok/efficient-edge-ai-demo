@@ -1,64 +1,53 @@
-<!DOCTYPE html<html>
-  <head>
-    <title>Demo</title>
-      <style>
-        textarea {
-          min-height: 150px;
-          width: 650px;
-          padding: 10px;
-          font-size: 16px;
-          line-height: 1.5;
-          resize: none; /* disable resizing */
-        }
-    </style>
-  </head>
-  <body>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Demo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    #banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('banner.png') no-repeat center center;
+      background-size: cover; /* Stretch the image to cover the container */
+      opacity: 0.5; /* Set the banner to 50% transparent */
+      z-index: -1; /* Place the banner behind other content */
+    }
+
+    #content {
+      position: relative; /* Set other content to be on top of the banner */
+      z-index: 1;
+    }
+
+    /* Style h1 headers in dark purple */
+    h1 {
+      color: purple;
+      font-size: 45px;
+    }
+
+    /* Your existing CSS styles for textareas and other elements */
+
+  </style>
+</head>
+<body>
+  <div id="banner"></div>
+  <div id="content">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script type=text/javascript>
-      var llm_source = new EventSource('/llm_stream');
-      llm_source.onmessage = function (event) {
-        if (event.data != 1 && event.data != "<focus>") {
-           document.getElementById("chat").value += event.data.replace("<newline>", "\n");
-           $("textarea#chat").trigger("input");
-        }
-        else if (event.data == "<focus>") {
-          document.getElementById("chat").focus()
-        }
-      }
-      var fps_source = new EventSource('/fps_stream');
-      fps_source.onmessage = function (event) {
-        if (event.data != 1)
-          document.getElementById("fps").innerHTML = "Inference Per Second: " + event.data
-      }
-      function llm_send() {
-        document.getElementById("chat").value += "\n";
-        llm();
-      }
-      function llm() {
-        var chat = $('textarea#chat').val();
-        var context = $('textarea#context').val();
-        $.post('/llm', { prompt_data: chat, prompt_context: context })
-      }
-      function context_info() {
-        $.get('/get_context', function(data){
-          document.getElementById("context").innerHTML += data
-        });
-      }
-      $(document).ready(function () {
-        $("textarea#chat").on("input", function () {
-          this.style.height = "auto";
-          this.style.height = this.scrollHeight + 10 + "px";
-        });
-        var chat = document.getElementById("chat");
-        chat.focus();
-        chat.selectionStart = chat.selectionEnd = chat.value.length;
-      });
+    <script type="text/javascript">
+      // Your JavaScript code here
     </script>
     <div style="width: 100%; display: table;">
       <div style="display: table-row">
         <div style="width: 1000px; display: table-cell;">
           <h1>Video Stream</h1>
-          <img style="width:960px;height:720px;" src="{{ url_for('vid_stream') }}"></img>
+          <img style="width: 960px; height: 720px;" src="{{ url_for('vid_stream') }}" alt="Video Stream">
           <div id="fps">Inferences Per Second: 0</div>
         </div>
         <div style="display: table-cell;">
@@ -68,11 +57,12 @@
             <textarea id="context">We are at KubeCon 2023 and I am presenting Efficient Edge Computing: Unleashing the Potential of AI/ML with Lightweight Kubernetes.</textarea><br>
             <h3>Chat</h3>
             <textarea id="chat" onkeyup="if(event.keyCode==13) { llm() }">User: </textarea><br>
-            <button type='button' onclick="llm_send()">Send Chat</button>
-            <button type='button' onclick="context_info()">Evaluate Context</button>
+            <button type="button" onclick="llm_send()">Send Chat</button>
+            <button type="button" onclick="context_info()">Evaluate Context</button>
           </form>
         </div>
       </div>
     </div>
-  </body>
+  </div>
+</body>
 </html>
