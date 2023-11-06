@@ -9,7 +9,6 @@ from yoloserving_pb2_grpc import MultiYoloServicer
 from yoloserving_pb2_grpc import add_MultiYoloServicer_to_server
 import supervision as sv
 from collections import Counter
-import numpy as np
 
 class YoloServing(MultiYoloServicer):
     async def yoloInference(self, request: YoloRequest,
@@ -29,14 +28,14 @@ class YoloServing(MultiYoloServicer):
         # Instantiate the YOLOv8n TensorRT model
         model = YOLO("yolov8n.engine")
 
+        # Load watermark image
+        watermark = cv2.imread("watermark.png")
+
         # Create an iterator for all produced frames on the input stream "device=0" (/dev/video0)
         for result in model(source=0, device=0, show=True, stream=True, agnostic_nms=True, verbose=False):
 
             # Store our frame for bounding boxes later
             frame = result.orig_img
-
-            # Load watermark image
-            watermark = cv2.imread("watermark.png")
 
             # Calculate the dimensions for the watermark (e.g., 10% of the frame width)
             frame_height, frame_width, _ = frame.shape
