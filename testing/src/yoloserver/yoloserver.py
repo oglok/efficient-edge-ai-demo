@@ -60,7 +60,12 @@ class YoloServing(MultiYoloServicer):
                 in detections
             ]
 
-            counted_labels = str(Counter(labels))
+            labelCounter = Counter(labels)
+
+            countedLabels = ""
+
+            for key, num in labelCounter.items():
+              countedLabels += "There are " + str(num) + " " + key + " in this room right now. "
 
             # Annotate our frame with our detections and labels
             frame = box_annotator.annotate(
@@ -76,7 +81,7 @@ class YoloServing(MultiYoloServicer):
             imgstring = encodedImage.tobytes()
 
             # Yield back our YoloReply
-            yield YoloReply(labels=counted_labels,image=imgstring)
+            yield YoloReply(labels=countedLabels,image=imgstring)
 
 def precache_model():
     # Pre-run inference to "warm up" the engine file into memory using the
