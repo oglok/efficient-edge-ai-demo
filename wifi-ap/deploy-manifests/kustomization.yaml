@@ -1,5 +1,0 @@
-resources:
-  - namespace.yaml
-  - cluster-role.yaml
-  - sa.yaml
-  - cam-ap.yaml

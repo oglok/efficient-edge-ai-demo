@@ -1,8 +1,0 @@
-FROM registry.fedoraproject.org/fedora-minimal:35-aarch64
-RUN microdnf install -y --setopt=install_weak_deps=0 hostapd dnsmasq iproute vim
-COPY hostapd.rpi4.conf /etc/hostapd/hostapd.conf
-COPY microshift-wlP1p1s0-dnsmasq-conf /etc/dnsmasq.d/
-
-COPY run.sh /run.sh
-
-CMD ["/run.sh"]
