@@ -27,6 +27,36 @@ spec:
   sessionAffinity: None
   type: ClusterIP
 ---
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: privileged-vicuna
+allowPrivilegedContainer: true
+allowHostNetwork: true
+allowHostPorts: true
+allowHostPID: true
+allowHostIPC: true
+readOnlyRootFilesystem: false
+requiredDropCapabilities: []
+defaultAddCapabilities: []
+allowedCapabilities:
+- '*'
+volumes:
+- '*'
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: RunAsAny
+users:
+- system:serviceaccount:efficient-edge-demo:vicuna-sa
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vicuna-sa
+  namespace: efficient-edge-demo
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -44,10 +74,13 @@ spec:
       labels:
         app: vicunaserver
     spec:
+      serviceAccountName: vicuna-sa
       containers:
       - name: vicunaserver
-        image: quay.io/alexander_mevec/efficient-edge-demo:vicunaserver
-        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        image: quay.io/oglok/efficient-edge-ai-demo-vicunaserver:jetpack-6
+        imagePullPolicy: Always
         ports:
           - name: grpc-port
             containerPort: 50051
@@ -105,10 +138,8 @@ spec:
     spec:
       containers:
       - name: webserver
-        image: quay.io/alexander_mevec/efficient-edge-demo:webserver
-        imagePullPolicy: IfNotPresent
-        securityContext:
-          privileged: true
+        image: quay.io/oglok/efficient-edge-ai-demo-webserver:jetpack-6
+        imagePullPolicy: Always
         ports:
           - name: flask-port
             containerPort: 5000
@@ -136,6 +167,36 @@ spec:
   sessionAffinity: None
   type: ClusterIP
 ---
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: privileged-yoloserver
+allowPrivilegedContainer: true
+allowHostNetwork: true
+allowHostPorts: true
+allowHostPID: true
+allowHostIPC: true
+readOnlyRootFilesystem: false
+requiredDropCapabilities: []
+defaultAddCapabilities: []
+allowedCapabilities:
+- '*'
+volumes:
+- '*'
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: RunAsAny
+users:
+- system:serviceaccount:efficient-edge-demo:yoloserver-sa
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: yoloserver-sa
+  namespace: efficient-edge-demo
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -153,10 +214,11 @@ spec:
       labels:
         app: yoloserver
     spec:
+      serviceAccountName: yoloserver-sa
       containers:
       - name: yoloserver
-        image: quay.io/alexander_mevec/efficient-edge-demo:yoloserver
-        imagePullPolicy: IfNotPresent
+        image: quay.io/oglok/efficient-edge-ai-demo-yoloserver:jetpack-6
+        imagePullPolicy: Always
         securityContext:
           privileged: true
         ports:
