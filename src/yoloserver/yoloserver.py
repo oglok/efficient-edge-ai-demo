@@ -73,7 +73,7 @@ class YoloServing(MultiYoloServicer):
             # Prepare all labels
             labels = [
                 f"{names[class_id]}"
-                for _,_,_,class_id,_
+                for _,_,_,class_id,_,_
                 in detections
             ]
 
