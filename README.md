@@ -99,3 +99,5 @@ Of course, replace oglok by your Quay user or registry.
 This demo has been developed by Alexander Mevec and Ricardo Noriega and presented for the first time at Kubecon 2023 Chicago.
 
 You can see a video of the entire presentation in the following [link](https://www.youtube.com/watch?v=11CzoVex7rU)
+
+![Kubecon](images/kubecon.png)
